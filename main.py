@@ -13,6 +13,9 @@ from gi.repository import AppIndicator3
 
 
 class MyIndicator:
+    timeout = 300
+    timeout_id = 0
+
     def __init__(self):
         # noinspection PyArgumentList
         self.ind = AppIndicator3.Indicator.new(
@@ -25,11 +28,25 @@ class MyIndicator:
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        self.menu_item('Forecast', 'weather-clear', dir_path + '/run.sh')
-        self.menu_item('Quit', 'application-exit')
+        self.menu_item('Forecast', 'weather-clear', self.run, dir_path + '/run.sh')
+        self.menu_item('Refresh', 'emblem-synchronizing', self.refresh)
+        self.menu_item('Quit', 'application-exit', self.quit)
 
         self.menu.show_all()
         self.ind.set_menu(self.menu)
+
+    def menu_item(self, label, icon_name, action, args=None):
+        item = Gtk.ImageMenuItem()
+        img = Gtk.Image()
+        img.set_from_icon_name(icon_name, 16)
+        item.set_image(img)
+        item.set_always_show_image(True)
+        item.set_label(label)
+        if args:
+            item.connect('activate', action, args)
+        else:
+            item.connect('activate', action)
+        self.menu.append(item)
 
     @staticmethod
     def weather_icon(code):
@@ -100,32 +117,30 @@ class MyIndicator:
             print(temp_str, weather_code, weather_value)
         except Exception:
             pass
+        if 0 == weather_code:
+            self.timeout = 30
+        else:
+            self.timeout = 300
         self.ind.set_icon(self.weather_icon(weather_code))
         self.ind.set_label(temp_str, '')
-        GLib.timeout_add_seconds(300, self.update)
+        self.timeout_id = GLib.timeout_add_seconds(self.timeout, self.update)
 
-    def menu_item(self, label, icon_name, connect_args=None):
-        item = Gtk.ImageMenuItem()
-        img = Gtk.Image()
-        img.set_from_icon_name(icon_name, 16)
-        item.set_image(img)
-        item.set_always_show_image(True)
-        item.set_label(label)
-        if connect_args:
-            item.connect('activate', self.run, connect_args)
-        else:
-            item.connect('activate', self.quit)
-        self.menu.append(item)
-
-    def main(self):
+    def refresh(self, widget):
+        try:
+            GLib.source_remove(self.timeout_id)
+        except Exception:
+            pass
         self.update()
-        Gtk.main()
 
     def run(self, widget, param):
         subprocess.Popen(param)
 
     def quit(self, widget):
         Gtk.main_quit()
+
+    def main(self):
+        self.update()
+        Gtk.main()
 
 
 if __name__ == '__main__':
