@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import sys
 import requests
 import subprocess
 import gi.repository
@@ -19,7 +20,7 @@ class MyIndicator:
     def __init__(self):
         # noinspection PyArgumentList
         self.ind = AppIndicator3.Indicator.new(
-            'Weather Indicator 1.0.0',
+            'Weather Indicator 1.0.1',
             'weather-severe-alert',
             AppIndicator3.IndicatorCategory.SYSTEM_SERVICES
         )
@@ -28,7 +29,7 @@ class MyIndicator:
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        self.menu_item('Forecast', 'weather-clear', self.run, dir_path + '/run.sh')
+        self.menu_item('Forecast', 'weather-clear', self.run, [dir_path + '/run.sh', sys.argv[1] + '?lang=' + sys.argv[2]])
         self.menu_item('Refresh', 'emblem-synchronizing', self.refresh)
         self.menu_item('Quit', 'application-exit', self.quit)
 
@@ -84,6 +85,30 @@ class MyIndicator:
             284: 'weather-snow',                # Heavy freezing drizzle
 
             200: 'weather-storm',               # Thundery outbreaks possible
+
+            314: 'weather-snow',                # LightSleet
+            317: 'weather-snow',                # LightSleet
+            320: 'weather-snow',                # LightSnow
+            323: 'weather-snow',                # LightSnowShowers
+            326: 'weather-snow',                # LightSnowShowers
+            329: 'weather-snow',                # HeavySnow
+            332: 'weather-snow',                # HeavySnow
+            335: 'weather-snow',                # HeavySnowShowers
+            338: 'weather-snow',                # HeavySnow
+            350: 'weather-snow',                # LightSleet
+            353: 'weather-showers-scattered',   # LightShowers
+            356: 'weather-showers',             # HeavyShowers
+            359: 'weather-showers',             # HeavyRain
+            362: 'weather-snow',                # LightSleetShowers
+            365: 'weather-snow',                # LightSleetShowers
+            368: 'weather-snow',                # LightSnowShowers
+            371: 'weather-snow',                # HeavySnowShowers
+            374: 'weather-snow',                # LightSleetShowers
+            377: 'weather-snow',                # LightSleet
+            386: 'weather-snow',                # ThunderyShowers
+            389: 'weather-storm',               # ThunderyHeavyRain
+            392: 'weather-snow',                # ThunderySnowShowers
+            395: 'weather-snow',                # HeavySnowShowers
         }
         icon = icons.get(code, 'weather-severe-alert')
 
@@ -105,7 +130,7 @@ class MyIndicator:
         temp_str = ''
         weather_code = 0
         try:
-            r = requests.get('https://wttr.in/Tokyo?format=j1')
+            r = requests.get('https://wttr.in/' + sys.argv[1] + '?format=j1')
             data = r.json()
             data_current = data['current_condition'][0]
             temp = int(data_current['temp_C'])
@@ -144,6 +169,8 @@ class MyIndicator:
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print('Use:', 'main.py', '[city]', '[language]')
+        quit()
     indicator = MyIndicator()
     indicator.main()
-
