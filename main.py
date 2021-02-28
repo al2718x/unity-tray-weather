@@ -29,7 +29,7 @@ class MyIndicator:
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        self.menu_item('Forecast', 'weather-clear', self.run, [dir_path + '/run.sh', sys.argv[1] + '?lang=' + sys.argv[2]])
+        self.menu_item('Forecast', 'weather-clear', self.run, [dir_path + '/wttr.sh', sys.argv[1] + '?lang=' + sys.argv[2]])
         self.menu_item('Refresh', 'emblem-synchronizing', self.refresh)
         self.menu_item('Quit', 'application-exit', self.quit)
 
