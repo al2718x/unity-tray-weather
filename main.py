@@ -20,16 +20,17 @@ class MyIndicator:
     def __init__(self):
         # noinspection PyArgumentList
         self.ind = AppIndicator3.Indicator.new(
-            'Weather Indicator 1.0.1',
+            'Weather Indicator 1.1.0',
             'weather-severe-alert',
             AppIndicator3.IndicatorCategory.SYSTEM_SERVICES
         )
         self.ind.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
         self.menu = Gtk.Menu()
 
-        dir_path = os.path.dirname(os.path.realpath(__file__))
+        wttr = os.path.dirname(os.path.realpath(__file__)) + '/wttr.sh'
 
-        self.menu_item('Forecast', 'weather-clear', self.run, [dir_path + '/wttr.sh', sys.argv[1] + '?lang=' + sys.argv[2]])
+        self.menu_item('Weather Forecast', 'weather-clear', self.run, [wttr, '125x40', sys.argv[1] + '?lang=' + sys.argv[2]])
+        self.menu_item('Moon Phase', 'weather-clear-night', self.run, [wttr, '73x27', 'Moon?lang=' + sys.argv[2]])
         self.menu_item('Refresh', 'emblem-synchronizing', self.refresh)
         self.menu_item('Quit', 'application-exit', self.quit)
 
