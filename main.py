@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import datetime
+import locale
 import os
 import sys
 import requests
@@ -20,7 +21,7 @@ class MyIndicator:
     def __init__(self):
         # noinspection PyArgumentList
         self.ind = AppIndicator3.Indicator.new(
-            'Weather Indicator 1.1.0',
+            'Weather Indicator 1.1.1',
             'weather-severe-alert',
             AppIndicator3.IndicatorCategory.SYSTEM_SERVICES
         )
@@ -51,7 +52,7 @@ class MyIndicator:
         self.menu.append(item)
 
     @staticmethod
-    def weather_icon(code):
+    def weather_icon(code, is_day):
         icons = {
             113: 'weather-clear',               # Sunny / Clear
 
@@ -113,11 +114,7 @@ class MyIndicator:
         }
         icon = icons.get(code, 'weather-severe-alert')
 
-        now = datetime.datetime.now()
-        hour = int(now.strftime('%H'))
-        if 8 < hour < 20:
-            pass
-        else:  # night
+        if not is_day:
             if 113 == code:
                 icon = 'weather-clear-night'
             if 116 == code:
@@ -127,9 +124,30 @@ class MyIndicator:
 
         return icon
 
+    @staticmethod
+    def is_day(t_from, t_till):
+        current_locale = locale.getlocale(locale.LC_TIME)
+        locale.setlocale(locale.LC_TIME, 'en_US.utf8')
+        is_day = False
+        now = datetime.datetime.now()
+        try:
+            d_from = datetime.datetime.strptime(t_from.strip(), '%I:%M %p')
+            d_till = datetime.datetime.strptime(t_till.strip(), '%I:%M %p')
+            t_now = now.strftime('%H:%M')
+            d_now = datetime.datetime.strptime(t_now, '%H:%M')
+            if d_from < d_now < d_till:
+                is_day = True
+        except Exception as e:
+            print(e)
+            if 8 < int(now.strftime('%H')) < 20:
+                is_day = True
+        locale.setlocale(locale.LC_TIME, current_locale)
+        return is_day
+
     def update(self):
         temp_str = ''
         weather_code = 0
+        is_day = True
         try:
             r = requests.get('https://wttr.in/' + sys.argv[1] + '?format=j1')
             data = r.json()
@@ -140,22 +158,26 @@ class MyIndicator:
                 temp_str = '+' + temp_str
             weather_code = int(data_current['weatherCode'])
             weather_value = data_current['weatherDesc'][0]['value']
-            print(temp_str, weather_code, weather_value)
-        except Exception:
-            pass
+            astronomy = data['weather'][0]['astronomy'][0]
+            sunrise = astronomy['sunrise']
+            sunset = astronomy['sunset']
+            is_day = self.is_day(sunrise, sunset)
+            print(temp_str, weather_code, weather_value, sunrise, '-', sunset, 'day=', is_day)
+        except Exception as e:
+            print(e)
         if 0 == weather_code:
             self.timeout = 30
         else:
             self.timeout = 300
-        self.ind.set_icon(self.weather_icon(weather_code))
+        self.ind.set_icon(self.weather_icon(weather_code, is_day))
         self.ind.set_label(temp_str, '')
         self.timeout_id = GLib.timeout_add_seconds(self.timeout, self.update)
 
     def refresh(self, widget):
         try:
             GLib.source_remove(self.timeout_id)
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
         self.update()
 
     def run(self, widget, param):
@@ -171,7 +193,7 @@ class MyIndicator:
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('Use:', 'main.py', '[city]', '[language]')
+        print('Use:', 'weather.py', '[city]', '[language]')
         quit()
     indicator = MyIndicator()
     indicator.main()
