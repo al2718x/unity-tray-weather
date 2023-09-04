@@ -149,7 +149,7 @@ class MyIndicator:
         weather_code = 0
         is_day = True
         try:
-            r = requests.get('https://wttr.in/' + sys.argv[1] + '?format=j1')
+            r = requests.get('https://wttr.in/' + sys.argv[1] + '?format=j1', timeout=5)
             data = r.json()
             data_current = data['current_condition'][0]
             temp = int(data_current['temp_C'])
