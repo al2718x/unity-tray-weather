@@ -7,6 +7,7 @@ import sys
 import requests
 import subprocess
 import gi.repository
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('AppIndicator3', '0.1')
 from gi.repository import GLib
@@ -21,7 +22,7 @@ class MyIndicator:
     def __init__(self):
         # noinspection PyArgumentList
         self.ind = AppIndicator3.Indicator.new(
-            'Weather Indicator 1.1.1',
+            'Weather Indicator 1.1.2',
             'weather-severe-alert',
             AppIndicator3.IndicatorCategory.SYSTEM_SERVICES
         )
@@ -30,8 +31,18 @@ class MyIndicator:
 
         wttr = os.path.dirname(os.path.realpath(__file__)) + '/wttr.sh'
 
-        self.menu_item('Weather Forecast', 'weather-clear', self.run, [wttr, '125x40', sys.argv[1] + '?lang=' + sys.argv[2]])
-        self.menu_item('Moon Phase', 'weather-clear-night', self.run, [wttr, '73x27', 'Moon?lang=' + sys.argv[2]])
+        self.menu_item(
+            f'Weather Forecast ({sys.argv[1]})',
+            'weather-clear',
+            self.run,
+            [wttr, '125x40', sys.argv[1] + '?lang=' + sys.argv[2]]
+        )
+        self.menu_item(
+            'Moon Phase',
+            'weather-clear-night',
+            self.run,
+            [wttr, '73x27', 'Moon?lang=' + sys.argv[2]]
+        )
         self.menu_item('Refresh', 'emblem-synchronizing', self.refresh)
         self.menu_item('Quit', 'application-exit', self.quit)
 
@@ -54,63 +65,63 @@ class MyIndicator:
     @staticmethod
     def weather_icon(code, is_day):
         icons = {
-            113: 'weather-clear',               # Sunny / Clear
+            113: 'weather-clear',  # Sunny / Clear
 
-            116: 'weather-few-clouds',          # Partly cloudy
-            119: 'weather-few-clouds',          # Cloudy
+            116: 'weather-few-clouds',  # Partly cloudy
+            119: 'weather-few-clouds',  # Cloudy
 
-            122: 'weather-overcast',            # Overcast
+            122: 'weather-overcast',  # Overcast
 
-            143: 'weather-fog',                 # Mist
-            248: 'weather-fog',                 # Fog
-            260: 'weather-fog',                 # Freezing fog
+            143: 'weather-fog',  # Mist
+            248: 'weather-fog',  # Fog
+            260: 'weather-fog',  # Freezing fog
 
-            176: 'weather-showers-scattered',   # Patchy rain possible
-            293: 'weather-showers-scattered',   # Patchy light rain
-            296: 'weather-showers-scattered',   # Light rain
-            299: 'weather-showers-scattered',   # Moderate rain at times
-            302: 'weather-showers-scattered',   # Moderate rain
-            311: 'weather-showers-scattered',   # Light freezing rain
+            176: 'weather-showers-scattered',  # Patchy rain possible
+            293: 'weather-showers-scattered',  # Patchy light rain
+            296: 'weather-showers-scattered',  # Light rain
+            299: 'weather-showers-scattered',  # Moderate rain at times
+            302: 'weather-showers-scattered',  # Moderate rain
+            311: 'weather-showers-scattered',  # Light freezing rain
 
-            305: 'weather-showers',             # Heavy rain at times
-            308: 'weather-showers',             # Heavy rain
+            305: 'weather-showers',  # Heavy rain at times
+            308: 'weather-showers',  # Heavy rain
 
-            179: 'weather-snow',                # Patchy snow possible
-            182: 'weather-snow',                # Patchy sleet possible
+            179: 'weather-snow',  # Patchy snow possible
+            182: 'weather-snow',  # Patchy sleet possible
 
-            227: 'weather-snow',                # Blowing snow
-            230: 'weather-snow',                # Blizzard
-            185: 'weather-snow',                # Patchy freezing drizzle possible
-            263: 'weather-snow',                # Patchy light drizzle
-            266: 'weather-snow',                # Light drizzle
-            281: 'weather-snow',                # Freezing drizzle
-            284: 'weather-snow',                # Heavy freezing drizzle
+            227: 'weather-snow',  # Blowing snow
+            230: 'weather-snow',  # Blizzard
+            185: 'weather-snow',  # Patchy freezing drizzle possible
+            263: 'weather-snow',  # Patchy light drizzle
+            266: 'weather-snow',  # Light drizzle
+            281: 'weather-snow',  # Freezing drizzle
+            284: 'weather-snow',  # Heavy freezing drizzle
 
-            200: 'weather-storm',               # Thundery outbreaks possible
+            200: 'weather-storm',  # Thundery outbreaks possible
 
-            314: 'weather-snow',                # LightSleet
-            317: 'weather-snow',                # LightSleet
-            320: 'weather-snow',                # LightSnow
-            323: 'weather-snow',                # LightSnowShowers
-            326: 'weather-snow',                # LightSnowShowers
-            329: 'weather-snow',                # HeavySnow
-            332: 'weather-snow',                # HeavySnow
-            335: 'weather-snow',                # HeavySnowShowers
-            338: 'weather-snow',                # HeavySnow
-            350: 'weather-snow',                # LightSleet
-            353: 'weather-showers-scattered',   # LightShowers
-            356: 'weather-showers',             # HeavyShowers
-            359: 'weather-showers',             # HeavyRain
-            362: 'weather-snow',                # LightSleetShowers
-            365: 'weather-snow',                # LightSleetShowers
-            368: 'weather-snow',                # LightSnowShowers
-            371: 'weather-snow',                # HeavySnowShowers
-            374: 'weather-snow',                # LightSleetShowers
-            377: 'weather-snow',                # LightSleet
-            386: 'weather-snow',                # ThunderyShowers
-            389: 'weather-storm',               # ThunderyHeavyRain
-            392: 'weather-snow',                # ThunderySnowShowers
-            395: 'weather-snow',                # HeavySnowShowers
+            314: 'weather-snow',  # LightSleet
+            317: 'weather-snow',  # LightSleet
+            320: 'weather-snow',  # LightSnow
+            323: 'weather-snow',  # LightSnowShowers
+            326: 'weather-snow',  # LightSnowShowers
+            329: 'weather-snow',  # HeavySnow
+            332: 'weather-snow',  # HeavySnow
+            335: 'weather-snow',  # HeavySnowShowers
+            338: 'weather-snow',  # HeavySnow
+            350: 'weather-snow',  # LightSleet
+            353: 'weather-showers-scattered',  # LightShowers
+            356: 'weather-showers',  # HeavyShowers
+            359: 'weather-showers',  # HeavyRain
+            362: 'weather-snow',  # LightSleetShowers
+            365: 'weather-snow',  # LightSleetShowers
+            368: 'weather-snow',  # LightSnowShowers
+            371: 'weather-snow',  # HeavySnowShowers
+            374: 'weather-snow',  # LightSleetShowers
+            377: 'weather-snow',  # LightSleet
+            386: 'weather-snow',  # ThunderyShowers
+            389: 'weather-storm',  # ThunderyHeavyRain
+            392: 'weather-snow',  # ThunderySnowShowers
+            395: 'weather-snow',  # HeavySnowShowers
         }
         icon = icons.get(code, 'weather-severe-alert')
 
@@ -193,7 +204,7 @@ class MyIndicator:
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('Use:', 'weather.py', '[city]', '[language]')
+        print('Use:', 'main.py', '[city]', '[language]')
         quit()
     indicator = MyIndicator()
     indicator.main()
