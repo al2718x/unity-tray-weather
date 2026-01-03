@@ -155,12 +155,23 @@ class MyIndicator:
         locale.setlocale(locale.LC_TIME, current_locale)
         return is_day
 
+    @staticmethod
+    def is_proxy(addr: str|None) -> bool:
+        if not addr:
+            return False
+        result = subprocess.run(["netstat", "-lntu"], capture_output=True, text=True)
+        return addr in result.stdout
+
     def update(self):
         temp_str = ''
         weather_code = 0
         is_day = True
         try:
-            r = requests.get('https://wttr.in/' + sys.argv[1] + '?format=j1', timeout=5)
+            addr = sys.argv[3] if len(sys.argv) > 3 else None
+            if self.is_proxy(addr):
+                r = requests.get('https://wttr.in/' + sys.argv[1] + '?format=j1', timeout=5, proxies={"http": "http://"+addr, "https": "http://"+addr})
+            else:
+                r = requests.get('https://wttr.in/' + sys.argv[1] + '?format=j1', timeout=5)
             data = r.json()
             data_current = data['current_condition'][0]
             temp = int(data_current['temp_C'])
@@ -204,7 +215,7 @@ class MyIndicator:
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('Use:', 'main.py', '[city]', '[language]')
+        print('Use:', 'main.py', '[city]', '[language]', '{proxy}')
         quit()
     indicator = MyIndicator()
     indicator.main()
